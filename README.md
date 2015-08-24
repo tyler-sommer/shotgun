@@ -1,2 +1,3 @@
-# shotgun
-A simple deployment tool
+# Shotgun
+
+A simple deployment tool.
