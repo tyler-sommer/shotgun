@@ -1,3 +1,4 @@
+// Package config provides application configuration.
 package config
 
 import (
@@ -7,6 +8,7 @@ import (
 	"io/ioutil"
 )
 
+// Config is a sort of factory for creating ready-to-use application components.
 type Config struct {
 	databaseFile string
 	privateKeyFile string
@@ -14,6 +16,7 @@ type Config struct {
 	authMethods []ssh.AuthMethod
 }
 
+// New allocates a new Config basedon the given parameters.
 func New(databaseFile, privateKeyFile string) (*Config, error) {
 	c := &Config{databaseFile, privateKeyFile, make([]ssh.AuthMethod, 0)}
 	err := c.populateAuthMethods()
@@ -47,6 +50,8 @@ func (c *Config) populateAuthMethods() error {
 	return nil
 }
 
+// NewClientConfig creates a ssh.ClientConfig with the given user and
+// any auth methods defined in the Config.
 func (c *Config) NewClientConfig(user string) *ssh.ClientConfig {
 	return &ssh.ClientConfig{
 		User: user,
@@ -54,6 +59,8 @@ func (c *Config) NewClientConfig(user string) *ssh.ClientConfig {
 	}
 }
 
+// NewDatabaseManager creates a database.Manager with the configured
+// database file.
 func (c *Config) NewDatabaseManager() (*database.Manager, error) {
 	return database.New(c.databaseFile)
 }

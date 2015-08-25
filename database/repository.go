@@ -9,6 +9,7 @@ import (
 	"errors"
 )
 
+// ErrKeyNotFound is returned when the given key is not in the underlying database.
 var ErrKeyNotFound = errors.New("Unable to locate record with the given key")
 
 func init() {
@@ -27,6 +28,7 @@ func genKey() string {
 	return string(b)
 }
 
+// ServerRepository handles persistence and hydration of Server models.
 type ServerRepository struct {
 	dbm *Manager
 }
@@ -47,6 +49,7 @@ func reverseTransformServer(s model.Server) ([]byte, error) {
 	return res, nil
 }
 
+// All returns a slice containing all Servers.
 func (repo *ServerRepository) All() ([]model.Server, error) {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
@@ -75,6 +78,10 @@ func (repo *ServerRepository) All() ([]model.Server, error) {
 	return servers, nil
 }
 
+// Find attempts to locate a Server with the given key.
+//
+// If a Server is not found, but no other error occurs, a
+// ErrKeyNotFound error will be returned.
 func (repo *ServerRepository) Find(key string) (model.Server, error) {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
@@ -92,6 +99,7 @@ func (repo *ServerRepository) Find(key string) (model.Server, error) {
 	return s, err
 }
 
+// Save attempts to persist a given Server.
 func (repo *ServerRepository) Save(s model.Server) error {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
@@ -112,6 +120,7 @@ func (repo *ServerRepository) Save(s model.Server) error {
 	return bucket.Put([]byte(key), val)
 }
 
+// Delete attempts to remove a Server defined by the given key.
 func (repo *ServerRepository) Delete(key string) error {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {

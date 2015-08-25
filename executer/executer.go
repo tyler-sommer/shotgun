@@ -1,3 +1,5 @@
+// Package executer implements handling of SSH sessions
+// and running commands against multiple session simultaneously.
 package executer
 
 import (
@@ -10,14 +12,18 @@ import (
 	"os"
 )
 
+// ExecutionMode defines the current operational mode for the Executer.
 type ExecutionMode int
 
+// Normal execution modes.
 const (
 	Run ExecutionMode = iota
 	Pause
 	Halt
 )
 
+// Executer performs creation of SSH sessions and runs commands against
+// those sessions in a simultaneous fashion.
 type Executer struct {
 	config *config.Config
 
@@ -28,6 +34,7 @@ type Executer struct {
 	Mode chan ExecutionMode
 }
 
+// New allocates a new Executer with the given Config and slice of Servers.
 func New(conf *config.Config, servers []model.Server) *Executer {
 	return &Executer{conf, servers, Run, make(chan ExecutionMode)}
 }
@@ -42,6 +49,7 @@ func (e *Executer) tick() {
 	}
 }
 
+// Execute starts the Executer in its processing.
 func (e *Executer) Execute() {
 	wg := sync.WaitGroup{}
 	for _, server := range e.servers {
@@ -55,7 +63,7 @@ func (e *Executer) Execute() {
 
 func (e *Executer) handle(server model.Server) {
 	fmt.Println("Connecting to ", server)
-	session := e.Connect(server)
+	session := e.connect(server)
 	e.tick()
 	if e.currMode == Halt {
 		return
@@ -96,7 +104,7 @@ func (e *Executer) handle(server model.Server) {
 	}
 }
 
-func (e *Executer) Connect(server model.Server) *ssh.Session {
+func (e *Executer) connect(server model.Server) *ssh.Session {
 	conf := e.config.NewClientConfig(server.User)
 
 	client, err := ssh.Dial("tcp", server.Host+":22", conf)

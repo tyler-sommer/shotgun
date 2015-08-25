@@ -1,3 +1,5 @@
+// Package database provides an abstraction layer between the application and
+// the underlying storage.
 package database
 
 import (
@@ -6,6 +8,7 @@ import (
 	"os"
 )
 
+// Manager maintains transactions and handles repository creation.
 type Manager struct {
 	db *bolt.DB
 	tx *bolt.Tx
@@ -13,6 +16,7 @@ type Manager struct {
 	buckets map[string]*bolt.Bucket
 }
 
+// New creates a Manager using the given file.
 func New(dbFile string) (*Manager, error) {
 	db, err := bolt.Open(dbFile, os.FileMode(0600), nil)
 	if err != nil {
@@ -27,6 +31,7 @@ func New(dbFile string) (*Manager, error) {
 	return &Manager{db, tx, make(map[string]*bolt.Bucket)}, nil
 }
 
+// bucket returns a Bucket with the given name for the current active transaction.
 func (dbm *Manager) bucket(name string) (*bolt.Bucket, error) {
 	if val, ok := dbm.buckets[name]; ok {
 		return val, nil
@@ -42,6 +47,7 @@ func (dbm *Manager) bucket(name string) (*bolt.Bucket, error) {
 	return b, nil
 }
 
+// reset clears the Manager and opens a new transaction.
 func (dbm *Manager) reset() error {
 	dbm.tx = nil
 	dbm.buckets = make(map[string]*bolt.Bucket)
@@ -56,6 +62,7 @@ func (dbm *Manager) reset() error {
 	return nil
 }
 
+// Commit attempts to persist any changes to the underlying database.
 func (dbm *Manager) Commit() error {
 	err := dbm.tx.Commit()
 	if err != nil {
@@ -70,6 +77,7 @@ func (dbm *Manager) Commit() error {
 	return nil
 }
 
+// Rollback resets any changes made in the current transaction and starts a new one.
 func (dbm *Manager) Rollback() error {
 	err := dbm.tx.Rollback()
 	if err != nil {
@@ -84,6 +92,7 @@ func (dbm *Manager) Rollback() error {
 	return nil
 }
 
+// NewServerRepository allocates a fully-wired ServerRepository.
 func (dbm *Manager) NewServerRepository() (*ServerRepository, error) {
 	return &ServerRepository{dbm}, nil
 }
