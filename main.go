@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/tyler-sommer/shotgun/config"
-	"github.com/tyler-sommer/shotgun/model"
-	"github.com/tyler-sommer/shotgun/data"
+	"github.com/tyler-sommer/shotgun/database"
 	"github.com/tyler-sommer/shotgun/executer"
+	"github.com/tyler-sommer/shotgun/model"
 
 	"flag"
 
@@ -42,14 +42,14 @@ func main() {
 		panic(err)
 	}
 
-	key := "somekey"
+	key := "a"
 
 	s1, err := repo.Find(key)
-	if err != nil && err != data.KeyNotFoundError {
+	if err != nil && err != database.ErrKeyNotFound {
 		panic(err)
 	}
 
-	if err == data.KeyNotFoundError {
+	if err == database.ErrKeyNotFound {
 		fmt.Println("Creating a server")
 		script := model.NewScript()
 		script.Enabled = true
@@ -59,7 +59,7 @@ func main() {
 
 		s1 = model.NewServer()
 		s1.SetKey(key)
-		s1.Host = "server01.localhost"
+		s1.Host = "server1.localhost"
 		s1.User = "app"
 		s1.Scripts = append(s1.Scripts, script)
 

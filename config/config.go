@@ -2,7 +2,7 @@ package config
 
 import (
 	"code.google.com/p/go.crypto/ssh"
-	"github.com/tyler-sommer/shotgun/data"
+	"github.com/tyler-sommer/shotgun/database"
 
 	"io/ioutil"
 )
@@ -54,6 +54,6 @@ func (c *Config) NewClientConfig(user string) *ssh.ClientConfig {
 	}
 }
 
-func (c *Config) NewDatabaseManager() (*data.DatabaseManager, error) {
-	return data.New(c.databaseFile)
+func (c *Config) NewDatabaseManager() (*database.Manager, error) {
+	return database.New(c.databaseFile)
 }

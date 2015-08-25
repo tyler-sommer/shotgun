@@ -1,4 +1,4 @@
-package data
+package database
 
 import (
 	"github.com/tyler-sommer/shotgun/model"
@@ -9,7 +9,7 @@ import (
 	"errors"
 )
 
-var KeyNotFoundError = errors.New("Unable to locate record with the given key")
+var ErrKeyNotFound = errors.New("Unable to locate record with the given key")
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -27,8 +27,8 @@ func genKey() string {
 	return string(b)
 }
 
-type serverRepository struct {
-	dbm *DatabaseManager
+type ServerRepository struct {
+	dbm *Manager
 }
 
 func transformServer(data []byte) (model.Server, error) {
@@ -47,13 +47,13 @@ func reverseTransformServer(s model.Server) ([]byte, error) {
 	return res, nil
 }
 
-func (repo *serverRepository) All() ([]model.Server, error) {
+func (repo *ServerRepository) All() ([]model.Server, error) {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
 		return nil, err
 	}
 
-	servers := make([]model.Server, 0)
+	var servers []model.Server
 
 	err = bucket.ForEach(func(k, v []byte) error {
 		s, err := transformServer(v)
@@ -75,7 +75,7 @@ func (repo *serverRepository) All() ([]model.Server, error) {
 	return servers, nil
 }
 
-func (repo *serverRepository) Find(key string) (model.Server, error) {
+func (repo *ServerRepository) Find(key string) (model.Server, error) {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
 		return model.Server{}, err
@@ -83,7 +83,7 @@ func (repo *serverRepository) Find(key string) (model.Server, error) {
 
 	val := bucket.Get([]byte(key))
 	if len(val) == 0 {
-		return model.Server{}, KeyNotFoundError
+		return model.Server{}, ErrKeyNotFound
 	}
 
 	s, err := transformServer(val)
@@ -92,7 +92,7 @@ func (repo *serverRepository) Find(key string) (model.Server, error) {
 	return s, err
 }
 
-func (repo *serverRepository) Save(s model.Server) error {
+func (repo *ServerRepository) Save(s model.Server) error {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
 		return err
@@ -112,7 +112,7 @@ func (repo *serverRepository) Save(s model.Server) error {
 	return bucket.Put([]byte(key), val)
 }
 
-func (repo *serverRepository) Delete(key string) error {
+func (repo *ServerRepository) Delete(key string) error {
 	bucket, err := repo.dbm.bucket("Server")
 	if err != nil {
 		return err

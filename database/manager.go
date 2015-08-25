@@ -1,4 +1,4 @@
-package data
+package database
 
 import (
 	"github.com/boltdb/bolt"
@@ -6,14 +6,14 @@ import (
 	"os"
 )
 
-type DatabaseManager struct {
+type Manager struct {
 	db *bolt.DB
 	tx *bolt.Tx
 
 	buckets map[string]*bolt.Bucket
 }
 
-func New(dbFile string) (*DatabaseManager, error) {
+func New(dbFile string) (*Manager, error) {
 	db, err := bolt.Open(dbFile, os.FileMode(0600), nil)
 	if err != nil {
 		return nil, err
@@ -24,10 +24,10 @@ func New(dbFile string) (*DatabaseManager, error) {
 		return nil, err
 	}
 
-	return &DatabaseManager{db, tx, make(map[string]*bolt.Bucket)}, nil
+	return &Manager{db, tx, make(map[string]*bolt.Bucket)}, nil
 }
 
-func (dbm *DatabaseManager) bucket(name string) (*bolt.Bucket, error) {
+func (dbm *Manager) bucket(name string) (*bolt.Bucket, error) {
 	if val, ok := dbm.buckets[name]; ok {
 		return val, nil
 	}
@@ -42,7 +42,7 @@ func (dbm *DatabaseManager) bucket(name string) (*bolt.Bucket, error) {
 	return b, nil
 }
 
-func (dbm *DatabaseManager) reset() error {
+func (dbm *Manager) reset() error {
 	dbm.tx = nil
 	dbm.buckets = make(map[string]*bolt.Bucket)
 
@@ -56,7 +56,7 @@ func (dbm *DatabaseManager) reset() error {
 	return nil
 }
 
-func (dbm *DatabaseManager) Commit() error {
+func (dbm *Manager) Commit() error {
 	err := dbm.tx.Commit()
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func (dbm *DatabaseManager) Commit() error {
 	return nil
 }
 
-func (dbm *DatabaseManager) Rollback() error {
+func (dbm *Manager) Rollback() error {
 	err := dbm.tx.Rollback()
 	if err != nil {
 		return err
@@ -84,6 +84,6 @@ func (dbm *DatabaseManager) Rollback() error {
 	return nil
 }
 
-func (dbm *DatabaseManager) NewServerRepository() (*serverRepository, error) {
-	return &serverRepository{dbm}, nil
+func (dbm *Manager) NewServerRepository() (*ServerRepository, error) {
+	return &ServerRepository{dbm}, nil
 }
