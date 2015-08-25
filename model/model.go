@@ -5,10 +5,11 @@ type Command string
 type Script struct {
 	Commands []Command
 	Enabled bool
+	RequiresSudo bool
 }
 
 func NewScript() Script {
-	return Script{make([]Command, 0), false}
+	return Script{make([]Command, 0), true, false}
 }
 
 type Server struct {

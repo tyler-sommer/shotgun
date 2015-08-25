@@ -4,6 +4,7 @@ import (
 	"github.com/tyler-sommer/shotgun/config"
 	"github.com/tyler-sommer/shotgun/model"
 	"github.com/tyler-sommer/shotgun/data"
+	"github.com/tyler-sommer/shotgun/executer"
 
 	"flag"
 
@@ -51,6 +52,8 @@ func main() {
 	if err == data.KeyNotFoundError {
 		fmt.Println("Creating a server")
 		script := model.NewScript()
+		script.Enabled = true
+		script.RequiresSudo = true
 		script.Commands = append(script.Commands, "service httpd stop")
 		script.Commands = append(script.Commands, "service application stop")
 
@@ -78,5 +81,10 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println(servers)
+	e := executer.New(conf, servers)
+	e.Execute()
+
+	for {
+
+	}
 }
